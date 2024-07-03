@@ -8,16 +8,10 @@ import (
 
 type CustomerService interface {
 	GetbyId(id string) (model.Customer, error)
-	GetAll(page int, size int) ([]model.Customer, error)
 }
 
 type customerService struct {
 	repo repository.CustomerRepository
-}
-
-// GetAll implmenets CustomerService
-func (c *customerService) GetAll(page int, size int) ([]model.Customer, error) {
-	panic("unimplemented")
 }
 
 // GetById implements CustomerService

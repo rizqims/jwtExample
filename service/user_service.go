@@ -11,20 +11,14 @@ import (
 
 type UserService interface {
 	GetbyId(id string) (model.User, error)
-	GetAll(page int, size int) ([]model.User, error)
 	CreateNew(payload model.User) (model.User, error)
-	FindByUsername(username string) (model.User, error)
 	Login(payload dto.LoginDto) (dto.LoginResponseDto, error)
+	
 }
 
 type userService struct {
 	repo repository.UserRepository
 	jwt  JwtService
-}
-
-// GetAll implmenets UserService
-func (c *userService) GetAll(page int, size int) ([]model.User, error) {
-	panic("unimplemented")
 }
 
 // GetById implements UserService

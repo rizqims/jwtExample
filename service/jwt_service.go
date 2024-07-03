@@ -4,6 +4,7 @@ import (
 	"apilaundry/config"
 	"apilaundry/model"
 	"apilaundry/model/dto"
+	"errors"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -36,8 +37,18 @@ func (j *jwtService) GenerateToken(payload model.User) (dto.LoginResponseDto, er
 	return dto.LoginResponseDto{Token: ss}, nil
 }
 
-func (j *jwtService) 	VerifyToken(token string) (jwt.MapClaims, error){
-	panic("unimplemented")
+func (j *jwtService) VerifyToken(tokenString string) (jwt.MapClaims, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return []byte(j.config.Key), nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !token.Valid || !ok || claims["iss"] != j.config.Issuer {
+		return nil, errors.New("invalid issuer or claims")
+	}
+	return claims, nil
 }
 
 func NewJwtService(cg config.SecurityConfig) JwtService {

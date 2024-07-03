@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"apilaundry/middleware"
 	"apilaundry/service"
 	"apilaundry/util"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 type ProductController struct {
 	service service.ProductService
 	rg *gin.RouterGroup
+	aM middleware.AuthMiddleware
 }
 
 func  (p *ProductController) GetAllHandler(c *gin.Context){
@@ -38,10 +40,10 @@ func  (p *ProductController) GetAllHandler(c *gin.Context){
 }
 
 func (p *ProductController) Route(){
-	rg := p.rg.Group("/products")
+	rg := p.rg.Group("/products", p.aM.CheckToken("admin"))
 	rg.GET("/", p.GetAllHandler)
 }
 
-func NewProductController(service service.ProductService, rg *gin.RouterGroup) *ProductController{
-	return &ProductController{service: service, rg: rg}
+func NewProductController(service service.ProductService, rg *gin.RouterGroup, aM middleware.AuthMiddleware) *ProductController{
+	return &ProductController{service: service, rg: rg, aM: aM }
 }
