@@ -13,7 +13,7 @@ type UserService interface {
 	GetbyId(id string) (model.User, error)
 	CreateNew(payload model.User) (model.User, error)
 	Login(payload dto.LoginDto) (dto.LoginResponseDto, error)
-	
+	FindByUsername(username string) (model.User, error)
 }
 
 type userService struct {

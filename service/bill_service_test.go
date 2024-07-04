@@ -5,6 +5,7 @@ import (
 	servicemock "apilaundry/mocking/service_mock"
 	"apilaundry/model"
 	"apilaundry/model/dto"
+	"errors"
 	"testing"
 	"time"
 
@@ -100,4 +101,54 @@ func (suite *BillServiceTestSuite) TestCreateNewBill_Success() {
 	assert.NoError(suite.T(), err)
 	assert.Nil(suite.T(), err)
 
+}
+
+func (suite *BillServiceTestSuite) TestCreateNewBill_InvalidCustomer(){
+	suite.customerServiceMock.On("GetbyId", mockPayload.Customer).Return(model.Customer{},errors.New("error"))
+
+	_, err := suite.bS.CreateNewBill(mockPayload)
+	assert.Error(suite.T(), err)
+}
+
+func (suite *BillServiceTestSuite) TestCreateNewBill_InvalidUser(){
+	suite.customerServiceMock.On("GetbyId", mockPayload.Customer).Return(mockingBill.Customer, nil)
+	suite.userServiceMock.On("GetbyId", mockPayload.User).Return(model.User{},errors.New("error"))
+
+	_, err := suite.bS.CreateNewBill(mockPayload)
+	assert.Error(suite.T(), err)
+}
+
+func (suite *BillServiceTestSuite) TestCreateNewBill_InvalidProduct(){
+	suite.customerServiceMock.On("GetbyId", mockPayload.Customer).Return(mockingBill.Customer, nil)
+	suite.userServiceMock.On("GetbyId", mockPayload.User).Return(mockingBill.User, nil)
+
+	suite.productServiceMock.On("GetbyId", mockingBill.BillDetails[0].Product.Id).Return(model.Product{},errors.New("error"))
+
+	_, err := suite.bS.CreateNewBill(mockPayload)
+	assert.Error(suite.T(), err)
+}
+
+func (suite *BillServiceTestSuite) TestCreateeNewBill_Failed(){
+	suite.customerServiceMock.On("GetbyId", mockPayload.Customer).Return(mockingBill.Customer, nil)
+	suite.userServiceMock.On("GetbyId", mockPayload.User).Return(mockingBill.User, nil)
+
+	var billDetails []model.BillDetail
+	for _, v := range mockPayload.BillDetails {
+		suite.productServiceMock.On("GetbyId", v.Product.Id).Return(mockingBill.BillDetails[0].Product, nil)
+		billDetails = append(billDetails, model.BillDetail{
+			Product: mockingBill.BillDetails[0].Product,
+			Qty:     v.Qty,
+			Price:   mockingBill.BillDetails[0].Price,
+		})
+	}
+
+	mockBillayload := model.Bill{
+		Customer:    mockingBill.Customer,
+		User:        mockingBill.User,
+		BillDetails: billDetails,
+	}
+
+	suite.repoBillMock.On("Create", mockBillayload).Return(model.Bill{}, errors.New("error"))
+	_, err := suite.bS.CreateNewBill(mockPayload)
+	assert.Error(suite.T(), err)
 }

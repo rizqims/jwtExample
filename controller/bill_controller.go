@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"apilaundry/middleware"
 	"apilaundry/model/dto"
 	"apilaundry/service"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 type BillController struct {
 	service service.BillService
 	rg      *gin.RouterGroup
+	middleware middleware.AuthMiddleware
 }
 
 func (b *BillController) CreateHandler(c *gin.Context) {
@@ -28,10 +30,10 @@ func (b *BillController) CreateHandler(c *gin.Context) {
 }
 
 func (b *BillController) Route() {
-	group := b.rg.Group("/transactions")
+	group := b.rg.Group("/transactions", b.middleware.CheckToken("admin"))
 	group.POST("/", b.CreateHandler)
 }
 
-func NewBillController(service service.BillService, rg *gin.RouterGroup) *BillController {
-	return &BillController{service: service, rg: rg}
+func NewBillController(service service.BillService, rg *gin.RouterGroup, aM middleware.AuthMiddleware) *BillController {
+	return &BillController{service: service, rg: rg, middleware: aM}
 }

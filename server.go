@@ -27,7 +27,7 @@ type Server struct {
 
 func (s *Server) initiateRoute() {
 	routerGroup := s.engine.Group("/api/v1")
-	controller.NewBillController(s.bS, routerGroup).Route()
+	controller.NewBillController(s.bS, routerGroup, s.aM).Route()
 	controller.NewProductController(s.pS, routerGroup, s.aM).Route()
 	controller.NewUserController(s.uS, routerGroup).Route()
 }
